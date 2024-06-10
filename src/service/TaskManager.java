@@ -59,7 +59,7 @@ public class TaskManager {
 
     public void clearEpics() {
         epics.clear();
-        clearSubtasks();
+        subtasks.clear();
     }
 
     public Task getTask(int id) {
@@ -125,7 +125,7 @@ public class TaskManager {
         Subtask subtask = subtasks.get(id);
         if (subtask != null) {
             Epic epic = epics.get(subtask.getEpicId());
-            epic.removeSubtaskIds(subtask.getEpicId());
+            epic.removeSubtaskIds(subtask.getId());
             subtasks.remove(id);
             syncEpic(epic);
         }

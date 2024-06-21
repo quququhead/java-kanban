@@ -3,6 +3,7 @@ package service;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
 import model.Status;
 import model.Task;
@@ -12,9 +13,9 @@ import model.Epic;
 public class InMemoryTaskManager implements TaskManager {
     private int idManager;
     public final HistoryManager inMemoryHistoryManager;
-    private final HashMap<Integer, Task> tasks;
-    private final HashMap<Integer, Subtask> subtasks;
-    private final HashMap<Integer, Epic> epics;
+    private final Map<Integer, Task> tasks;
+    private final Map<Integer, Subtask> subtasks;
+    private final Map<Integer, Epic> epics;
 
     public InMemoryTaskManager() {
         idManager = 0;
@@ -175,6 +176,11 @@ public class InMemoryTaskManager implements TaskManager {
             }
         }
         return epicSubtask;
+    }
+
+    @Override
+    public List<Task> getHistory() {
+        return inMemoryHistoryManager.getHistory();
     }
 
     private void syncEpic(Epic epic) {

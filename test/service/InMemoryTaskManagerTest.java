@@ -34,7 +34,7 @@ class InMemoryTaskManagerTest {
         Task taskT1 = inMemoryTaskManager.getTask(0);
         Subtask subtaskS1 = inMemoryTaskManager.getSubtask(2);
         Epic epicE1 = inMemoryTaskManager.getEpic(1);
-        List<Task> list = inMemoryTaskManager.inMemoryHistoryManager.getHistory();
+        List<Task> list = inMemoryTaskManager.getHistory();
         Task firstTask = list.get(0);
         Task secondEpic = list.get(1);
         Task thirdSubtask = list.get(2);
@@ -78,7 +78,7 @@ class InMemoryTaskManagerTest {
         Task taskT1 = inMemoryTaskManager.getTask(0);
         inMemoryTaskManager.updateTask(task2);
         Task taskT2 = inMemoryTaskManager.getTask(0);
-        List<Task> list = inMemoryTaskManager.inMemoryHistoryManager.getHistory();
+        List<Task> list = inMemoryTaskManager.getHistory();
         Task firstTask = list.getFirst();
         Task secondTask = list.get(1);
         assertEquals("ИсходноеОписание", firstTask.getDescription());

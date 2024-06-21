@@ -1,16 +1,17 @@
 package model;
 
+import java.util.List;
 import java.util.ArrayList;
 
 public class Epic extends Task {
-    private final ArrayList<Integer> subtaskIds;
+    private final List<Integer> subtaskIds;
 
     public Epic(String name, String description) {
         super(name, description, Status.NEW);
         this.subtaskIds = new ArrayList<>();
     }
 
-    public ArrayList<Integer> getSubtaskIds() {
+    public List<Integer> getSubtaskIds() {
         return subtaskIds;
     }
 

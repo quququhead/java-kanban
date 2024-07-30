@@ -80,8 +80,8 @@ class InMemoryTaskManagerTest {
         Task taskT2 = inMemoryTaskManager.getTask(0);
         List<Task> list = inMemoryTaskManager.getHistory();
         Task firstTask = list.getFirst();
-        Task secondTask = list.get(1);
-        assertEquals("ИсходноеОписание", firstTask.getDescription());
+        Task secondTask = list.getFirst();
+        assertEquals("ИзмененноеОписание", firstTask.getDescription());
         assertEquals("ИзмененноеОписание", secondTask.getDescription());
     }
 }

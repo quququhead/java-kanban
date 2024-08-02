@@ -93,7 +93,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         save();
     }
 
-    private void save() {
+    private void save() throws ManagerSaveException {
         try (Writer writer = new FileWriter(file, StandardCharsets.UTF_8)) {
             writer.write(HEADLINE);
             for (Epic epic : epics.values()) {
@@ -106,29 +106,24 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                 writer.write("\n" + task.toStringForFile());
             }
         } catch (IOException e) {
-            throw new ManagerSaveException();
+            throw new ManagerSaveException("Ошибка сохранения!");
         }
     }
 
-    public Task fromString(String value) {
+    private Task fromString(String value) {
         if (value != null && !value.isBlank()) {
             String[] sortedValues = value.split(",");
-            Status status = null;
-            for (Status st : Status.values()) {
-                if (st.name().equals(sortedValues[3])) {
-                    status = st;
-                }
-            }
             Task task;
             if (Tasks.EPIC.name().equals(sortedValues[1])) {
                 task = new Epic(sortedValues[2], sortedValues[4]);
                 task.setId(Integer.parseInt(sortedValues[0]));
-                task.setStatus(status);
+                task.setStatus(Status.valueOf(sortedValues[3]));
             } else if (Tasks.SUBTASK.name().equals(sortedValues[1])) {
-                task = new Subtask(sortedValues[2], sortedValues[4], status, Integer.parseInt(sortedValues[5]));
+                task = new Subtask(sortedValues[2], sortedValues[4],
+                        Status.valueOf(sortedValues[3]), Integer.parseInt(sortedValues[5]));
                 task.setId(Integer.parseInt(sortedValues[0]));
             } else if (Tasks.TASK.name().equals(sortedValues[1])) {
-                task = new Task(sortedValues[2], sortedValues[4], status);
+                task = new Task(sortedValues[2], sortedValues[4], Status.valueOf(sortedValues[3]));
                 task.setId(Integer.parseInt(sortedValues[0]));
             } else {
                 return null;
@@ -139,26 +134,40 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         }
     }
 
-    public static FileBackedTaskManager loadFromFile(File file) {
+    public static FileBackedTaskManager loadFromFile(File file) throws ManagerSaveException {
         FileBackedTaskManager fileBackedTaskManager = new FileBackedTaskManager(file);
         try (BufferedReader bufferedReader = new BufferedReader(new FileReader(file, StandardCharsets.UTF_8))) {
+            int newId = -1;
             while (bufferedReader.ready()) {
                 String taskToString = bufferedReader.readLine();
                 if (!HEADLINE.equals(taskToString) && !taskToString.isBlank()) {
                     Task task = fileBackedTaskManager.fromString(taskToString);
+                    if (task.getId() > newId) {
+                        newId = task.getId();
+                    }
                     String substring = taskToString.substring(taskToString.indexOf(",") + 1,
                             taskToString.indexOf(",", taskToString.indexOf(",") + 1));
                     if (Tasks.EPIC.name().equals(substring)) {
-                        fileBackedTaskManager.addTask((Epic) task);
+                        fileBackedTaskManager.epics.put(task.getId(), (Epic) task);
                     } else if (Tasks.SUBTASK.name().equals(substring)) {
-                        fileBackedTaskManager.addTask((Subtask) task);
+                        fileBackedTaskManager.subtasks.put(task.getId(), (Subtask) task);
                     } else {
-                        fileBackedTaskManager.addTask(task);
+                        fileBackedTaskManager.tasks.put(task.getId(), task);
                     }
                 }
             }
+            fileBackedTaskManager.idManager = ++newId;
+            for (Subtask sub : fileBackedTaskManager.subtasks.values()) {
+                if (fileBackedTaskManager.epics.containsKey(sub.getEpicId())) {
+                    Epic epic = fileBackedTaskManager.epics.get(sub.getEpicId());
+                    epic.addSubtaskIds(sub.getId());
+                } else {
+                    fileBackedTaskManager.subtasks.remove(sub.getId());
+                    fileBackedTaskManager.save();
+                }
+            }
         } catch (IOException e) {
-            throw new ManagerSaveException();
+            throw new ManagerSaveException("Ошибка сохранения!");
         }
         return fileBackedTaskManager;
     }

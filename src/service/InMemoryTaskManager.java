@@ -11,7 +11,7 @@ import model.Subtask;
 import model.Epic;
 
 public class InMemoryTaskManager implements TaskManager {
-    private int idManager;
+    protected int idManager;
     protected final HistoryManager inMemoryHistoryManager;
     protected final Map<Integer, Task> tasks;
     protected final Map<Integer, Subtask> subtasks;

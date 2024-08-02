@@ -37,4 +37,13 @@ public class Epic extends Task {
                 ", subtaskIds=" + subtaskIds +
                 '}';
     }
+
+    @Override
+    public String toStringForFile() {
+        return id + "," +
+                Tasks.EPIC.name() + "," +
+                name + "," +
+                status.name() + "," +
+                description + "," + "";
+    }
 }

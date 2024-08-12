@@ -54,4 +54,12 @@ public class Task {
                 ", id=" + id +
                 '}';
     }
+
+    public String toStringForFile() {
+        return id + "," +
+                Tasks.TASK.name() + "," +
+                name + "," +
+                status.name() + "," +
+                description + "," + "";
+    }
 }

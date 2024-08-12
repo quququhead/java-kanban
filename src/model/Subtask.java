@@ -22,4 +22,14 @@ public class Subtask extends Task {
                 ", epicId=" + epicId +
                 '}';
     }
+
+    @Override
+    public String toStringForFile() {
+        return id + "," +
+                Tasks.SUBTASK.name() + "," +
+                name + "," +
+                status.name() + "," +
+                description + "," +
+                epicId;
+    }
 }

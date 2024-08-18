@@ -17,8 +17,7 @@ class FileBackedTaskManagerTest extends TaskManagerTest<FileBackedTaskManager> {
 
     @Override
     public void setTaskManager() {
-        taskManager = new FileBackedTaskManager(new File("D:\\JetBrains\\Under\\Projects\\java-kanban",
-                "tasks.txt"));
+        taskManager = new FileBackedTaskManager(new File("tasks.txt"));
     }
 
     @Test

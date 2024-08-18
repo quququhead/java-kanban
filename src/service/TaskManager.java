@@ -5,6 +5,8 @@ import model.Subtask;
 import model.Task;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 public interface TaskManager {
     List<Task> getTasks();
@@ -19,11 +21,11 @@ public interface TaskManager {
 
     void clearEpics();
 
-    Task getTask(int id);
+    Optional<Task> getTask(int id);
 
-    Subtask getSubtask(int id);
+    Optional<Subtask> getSubtask(int id);
 
-    Epic getEpic(int id);
+    Optional<Epic> getEpic(int id);
 
     void addTask(Task task);
 
@@ -46,4 +48,6 @@ public interface TaskManager {
     List<Subtask> getEpicSubtasks(int id);
 
     List<Task> getHistory();
+
+    Set<Task> getPrioritizedTasks();
 }

@@ -1,14 +1,17 @@
 package model;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.ArrayList;
 
 public class Epic extends Task {
     private final List<Integer> subtaskIds;
+    private LocalDateTime endTime;
 
     public Epic(String name, String description) {
-        super(name, description, Status.NEW);
+        super(name, description, Status.NEW, null, null);
         this.subtaskIds = new ArrayList<>();
+        this.endTime = null;
     }
 
     public List<Integer> getSubtaskIds() {
@@ -28,6 +31,15 @@ public class Epic extends Task {
     }
 
     @Override
+    public LocalDateTime getEndTime() {
+        return endTime;
+    }
+
+    public void setEndTime(LocalDateTime endTime) {
+        this.endTime = endTime;
+    }
+
+    @Override
     public String toString() {
         return "Epic{" +
                 "name=" + name +
@@ -35,15 +47,25 @@ public class Epic extends Task {
                 ", id=" + id +
                 ", status='" + status + '\'' +
                 ", subtaskIds=" + subtaskIds +
+                ", duration=" + duration +
+                ", startTime=" + startTime +
                 '}';
     }
 
     @Override
     public String toStringForFile() {
-        return id + "," +
+        String result = id + "," +
                 Tasks.EPIC.name() + "," +
                 name + "," +
                 status.name() + "," +
-                description + "," + "";
+                description + "," + ",";
+
+        if (duration != null) {
+            result += duration.toMinutes() + ",";
+        } else {
+            result += null + ",";
+        }
+
+        return result + startTime;
     }
 }

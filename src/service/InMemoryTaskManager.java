@@ -50,7 +50,7 @@ public class InMemoryTaskManager implements TaskManager {
             }
         });
         LocalDateTime  now = LocalDateTime.of(2024, 8, 18, 0, 0); // от какой даты
-        while(now.isBefore(LocalDateTime.of(2024, 8, 19, 1, 0))) { // до какой даты
+        while (now.isBefore(LocalDateTime.of(2024, 8, 19, 1, 0))) { // до какой даты
             mapTask.put(now, true);
             now = now.plus(Duration.ofMinutes(15)); // кратность
         }

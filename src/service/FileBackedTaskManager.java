@@ -241,16 +241,16 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         Epic epic = new Epic("Отпраздновать ДР", "На выходных");
         Subtask subtask1 = new Subtask("Собрать друзей", "Написать всем",
                 Status.NEW, 0, Duration.ofMinutes(15),
-                LocalDateTime.of(2024, 8, 18, 20, 15));
+                LocalDateTime.of(2024, 9, 18, 20, 15));
         Subtask subtask2 = new Subtask("Закупиться", "Больше еды и напитков",
                 Status.NEW, 0, Duration.ofMinutes(30),
-                LocalDateTime.of(2024, 8, 18, 21, 15));
+                LocalDateTime.of(2024, 9, 18, 21, 15));
         Subtask subtask3 = new Subtask("Найти домик", "На природе с баней",
                 Status.NEW, 0, Duration.ofMinutes(45),
-                LocalDateTime.of(2024, 8, 18, 22, 15));
+                LocalDateTime.of(2024, 9, 18, 22, 15));
         Epic emptyEpic = new Epic("Пустое название", "Пустое описание");
         Task task = new Task("Задача", "Описание задачи", Status.NEW,
-                Duration.ofMinutes(30), LocalDateTime.of(2024, 8, 18, 16, 15));
+                Duration.ofMinutes(30), LocalDateTime.of(2024, 9, 18, 16, 15));
 
         File temp = File.createTempFile("temps", ".txt");
 

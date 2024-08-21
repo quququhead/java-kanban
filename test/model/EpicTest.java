@@ -24,9 +24,9 @@ class EpicTest {
     public void shouldStatusOfEpicBeNewWithNewSubtasks() {
         Epic epic0 = new Epic("Эпик0", "ОписаниеЭпик0");
         Subtask subtask1 = new Subtask("Подзадача1", "ОписаниеПодзадача1", Status.NEW,
-                0, Duration.ofMinutes(15), LocalDateTime.of(2024, 8, 18, 20, 0));
+                0, Duration.ofMinutes(15), LocalDateTime.of(2024, 9, 18, 20, 0));
         Subtask subtask2 = new Subtask("Подзадача2", "ОписаниеПодзадача2", Status.NEW,
-                0, Duration.ofMinutes(30), LocalDateTime.of(2024, 8, 18, 21, 0));
+                0, Duration.ofMinutes(30), LocalDateTime.of(2024, 9, 18, 21, 0));
         taskManager.addTask(epic0);
         taskManager.addTask(subtask1);
         taskManager.addTask(subtask2);
@@ -37,9 +37,9 @@ class EpicTest {
     public void shouldStatusOfEpicBeDoneWithDoneSubtasks() {
         Epic epic0 = new Epic("Эпик0", "ОписаниеЭпик0");
         Subtask subtask1 = new Subtask("Подзадача1", "ОписаниеПодзадача1", Status.DONE,
-                0, Duration.ofMinutes(15), LocalDateTime.of(2024, 8, 18, 20, 0));
+                0, Duration.ofMinutes(15), LocalDateTime.of(2024, 9, 18, 20, 0));
         Subtask subtask2 = new Subtask("Подзадача2", "ОписаниеПодзадача2", Status.DONE,
-                0, Duration.ofMinutes(30), LocalDateTime.of(2024, 8, 18, 21, 0));
+                0, Duration.ofMinutes(30), LocalDateTime.of(2024, 9, 18, 21, 0));
         taskManager.addTask(epic0);
         taskManager.addTask(subtask1);
         taskManager.addTask(subtask2);
@@ -50,9 +50,9 @@ class EpicTest {
     public void shouldStatusOfEpicBeInProgressWithNewAndDoneSubtasks() {
         Epic epic0 = new Epic("Эпик0", "ОписаниеЭпик0");
         Subtask subtask1 = new Subtask("Подзадача1", "ОписаниеПодзадача1", Status.NEW,
-                0, Duration.ofMinutes(15), LocalDateTime.of(2024, 8, 18, 20, 0));
+                0, Duration.ofMinutes(15), LocalDateTime.of(2024, 9, 18, 20, 0));
         Subtask subtask2 = new Subtask("Подзадача2", "ОписаниеПодзадача2", Status.DONE,
-                0, Duration.ofMinutes(30), LocalDateTime.of(2024, 8, 18, 21, 0));
+                0, Duration.ofMinutes(30), LocalDateTime.of(2024, 9, 18, 21, 0));
         taskManager.addTask(epic0);
         taskManager.addTask(subtask1);
         taskManager.addTask(subtask2);
@@ -63,9 +63,9 @@ class EpicTest {
     public void shouldStatusOfEpicBeInProgressWithInProgressSubtasks() {
         Epic epic0 = new Epic("Эпик0", "ОписаниеЭпик0");
         Subtask subtask1 = new Subtask("Подзадача1", "ОписаниеПодзадача1", Status.IN_PROGRESS,
-                0, Duration.ofMinutes(15), LocalDateTime.of(2024, 8, 18, 20, 0));
+                0, Duration.ofMinutes(15), LocalDateTime.of(2024, 9, 18, 20, 0));
         Subtask subtask2 = new Subtask("Подзадача2", "ОписаниеПодзадача2", Status.IN_PROGRESS,
-                0, Duration.ofMinutes(30), LocalDateTime.of(2024, 8, 18, 21, 0));
+                0, Duration.ofMinutes(30), LocalDateTime.of(2024, 9, 18, 21, 0));
         taskManager.addTask(epic0);
         taskManager.addTask(subtask1);
         taskManager.addTask(subtask2);

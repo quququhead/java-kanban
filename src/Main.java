@@ -30,18 +30,18 @@ public class Main {
         Epic epic = new Epic("Отпраздновать ДР", "На выходных");
         Subtask subtask1 = new Subtask("Собрать друзей", "Написать всем", Status.NEW, 3,
                 Duration.ofMinutes(15),
-                LocalDateTime.of(2024, 8, 18, 18, 0)); //0 //2
+                LocalDateTime.of(2024, 9, 18, 18, 0)); //0 //2
         Subtask subtask2 = new Subtask("Закупиться", "Больше еды и напитков", Status.NEW, 3,
                 Duration.ofMinutes(15),
-                LocalDateTime.of(2024, 8, 18, 19, 0)); //0 //2
+                LocalDateTime.of(2024, 9, 18, 19, 0)); //0 //2
         Subtask subtask3 = new Subtask("Найти домик", "На природе с баней", Status.NEW, 3,
                 Duration.ofMinutes(15),
-                LocalDateTime.of(2024, 8, 18, 20, 0)); //0 //2
+                LocalDateTime.of(2024, 9, 18, 20, 0)); //0 //2
         Epic emptyEpic = new Epic("Пустое название", "Пустое описание");
         Task task1 = new Task("Пустое название1", "Пустое описание1", Status.NEW,
-                Duration.ofMinutes(15), LocalDateTime.of(2024, 8, 18, 21, 0));
+                Duration.ofMinutes(15), LocalDateTime.of(2024, 9, 18, 21, 0));
         Task task2 = new Task("Пустое название2", "Пустое описание2", Status.NEW,
-                Duration.ofMinutes(15), LocalDateTime.of(2024, 8, 18, 22, 0));
+                Duration.ofMinutes(15), LocalDateTime.of(2024, 9, 18, 22, 0));
 
         inMemoryTaskManager.addTask(epic);
         inMemoryTaskManager.addTask(subtask1);

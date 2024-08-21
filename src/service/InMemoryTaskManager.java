@@ -2,14 +2,8 @@ package service;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.Map;
-import java.util.Set;
-import java.util.HashMap;
-import java.util.TreeSet;
-import java.util.ArrayList;
-import java.util.Optional;
-import java.util.TreeMap;
-import java.util.List;
+import java.time.Period;
+import java.util.*;
 
 import model.Status;
 import model.Task;
@@ -49,8 +43,10 @@ public class InMemoryTaskManager implements TaskManager {
                 return 0;
             }
         });
-        LocalDateTime  now = LocalDateTime.of(2024, 8, 18, 0, 0); // от какой даты
-        while (now.isBefore(LocalDateTime.of(2024, 8, 19, 1, 0))) { // до какой даты
+        LocalDateTime now = LocalDateTime.now(); // от какой даты
+        now = LocalDateTime.of(now.getYear(), now.getMonth(), now.getDayOfMonth(), 0, 0);
+        LocalDateTime end = now.plus(Period.ofYears(1)); // до какой даты
+        while (now.isBefore(end)) {
             mapTask.put(now, true);
             now = now.plus(Duration.ofMinutes(15)); // кратность
         }
@@ -116,9 +112,14 @@ public class InMemoryTaskManager implements TaskManager {
                 .peek(inMemoryHistoryManager::remove)
                 .map(epics::get)
                 .filter(epic -> epic.getEndTime() != null)
-                .peek(epic -> {
-                    LocalDateTime start = epic.getStartTime();
-                    LocalDateTime end = epic.getEndTime();
+                .peek(setTask::remove)
+                .map(Epic::getSubtaskIds)
+                .flatMap(Collection::stream)
+                .map(subtasks::get)
+                .filter(subtask -> subtask.getEndTime() != null)
+                .peek(subtask -> {
+                    LocalDateTime start = subtask.getStartTime();
+                    LocalDateTime end = subtask.getEndTime();
                     do {
                         mapTask.put(start, true);
                         start = start.plus(Duration.ofMinutes(15));
@@ -449,7 +450,7 @@ public class InMemoryTaskManager implements TaskManager {
         } else {
             epic.setStatus(Status.IN_PROGRESS);
         }
-        if (epic.getEndTime() != null && endTime == null) { //getEndTme()
+        if (epic.getEndTime() != null && endTime == null) {
             setTask.remove(epic);
             LocalDateTime start = epic.getStartTime();
             LocalDateTime end = epic.getEndTime();

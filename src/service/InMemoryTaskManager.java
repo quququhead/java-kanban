@@ -11,6 +11,7 @@ import model.Subtask;
 import model.Epic;
 
 public class InMemoryTaskManager implements TaskManager {
+
     protected int idManager;
     protected final HistoryManager inMemoryHistoryManager;
     protected final Map<Integer, Task> tasks;
@@ -18,6 +19,8 @@ public class InMemoryTaskManager implements TaskManager {
     protected final Map<Integer, Epic> epics;
     protected final Set<Task> setTask;
     protected final Map<LocalDateTime, Boolean> mapTask;
+    protected final LocalDateTime now;
+    protected final LocalDateTime end;
 
     public InMemoryTaskManager() {
         idManager = 0;
@@ -43,12 +46,13 @@ public class InMemoryTaskManager implements TaskManager {
                 return 0;
             }
         });
-        LocalDateTime now = LocalDateTime.now(); // от какой даты
-        now = LocalDateTime.of(now.getYear(), now.getMonth(), now.getDayOfMonth(), 0, 0);
-        LocalDateTime end = now.plus(Period.ofYears(1)); // до какой даты
-        while (now.isBefore(end)) {
-            mapTask.put(now, true);
-            now = now.plus(Duration.ofMinutes(15)); // кратность
+        LocalDateTime start = LocalDateTime.now(); // от какой даты
+        now = LocalDateTime.of(start.getYear(), start.getMonth(), start.getDayOfMonth(), 0, 0);
+        end = now.plus(Period.ofYears(1)); // до какой даты
+        start = now;
+        while (start.isBefore(end.plus(Duration.ofMinutes(15)))) {
+            mapTask.put(start, true);
+            start = start.plus(Duration.ofMinutes(15)); // кратность
         }
     }
 
@@ -162,53 +166,109 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public void addTask(Task task) {
-        if (task.getEndTime() != null && task.getStartTime().getMinute() % 15 == 0
-                && task.getEndTime().getMinute() % 15 == 0) {
-            if (isCross(task)) {
-                task.setId(idManager++);
-                tasks.put(task.getId(), task);
-                setTask.add(task);
-                LocalDateTime start = task.getStartTime();
-                LocalDateTime end = task.getEndTime();
-                do {
-                    mapTask.put(start, false);
-                    start = start.plus(Duration.ofMinutes(15));
-                } while (!start.equals(end));
-            }
-        } else {
-            task.setId(idManager++);
-            tasks.put(task.getId(), task);
-        }
-    }
-
-    @Override
-    public void addTask(Subtask subtask) {
-        if (epics.containsKey(subtask.getEpicId())) {
-            if (subtask.getEndTime() != null && subtask.getStartTime().getMinute() % 15 == 0
-                    && subtask.getEndTime().getMinute() % 15 == 0) {
-                if (isCross(subtask)) {
-                    subtask.setId(idManager++);
-                    subtasks.put(subtask.getId(), subtask);
-                    setTask.add(subtask);
-                    LocalDateTime start = subtask.getStartTime();
-                    LocalDateTime end = subtask.getEndTime();
+    public boolean addTask(Task task) {
+        if (task != null) {
+            if (task.getEndTime() != null && task.getStartTime().isAfter(now)
+                    && task.getStartTime().isBefore(end) && task.getEndTime().isBefore(end)) {
+                if (isCross(task)) {
+                    task.setId(idManager++);
+                    tasks.put(task.getId(), task);
+                    setTask.add(task);
+                    int minute;
+                    if (task.getStartTime().getMinute() < 15) {
+                        minute = 0;
+                    } else if (task.getStartTime().getMinute() < 30) {
+                        minute = 15;
+                    } else if (task.getStartTime().getMinute() < 45) {
+                        minute = 30;
+                    } else {
+                        minute = 45;
+                    }
+                    LocalDateTime start = LocalDateTime.of(task.getStartTime().getYear(),
+                            task.getStartTime().getMonth(), task.getStartTime().getDayOfMonth(),
+                            task.getStartTime().getHour(), minute);
+                    if (task.getEndTime().getMinute() < 15) {
+                        minute = 0;
+                    } else if (task.getEndTime().getMinute() < 30) {
+                        minute = 15;
+                    } else if (task.getEndTime().getMinute() < 45) {
+                        minute = 30;
+                    } else {
+                        minute = 45;
+                    }
+                    LocalDateTime end = LocalDateTime.of(task.getEndTime().getYear(),
+                            task.getEndTime().getMonth(), task.getEndTime().getDayOfMonth(),
+                            task.getEndTime().getHour(), minute).plus(Duration.ofMinutes(15));
                     do {
                         mapTask.put(start, false);
                         start = start.plus(Duration.ofMinutes(15));
                     } while (!start.equals(end));
+                    return true;
+                }
+            } else {
+                task.setId(idManager++);
+                tasks.put(task.getId(), task);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public boolean addTask(Subtask subtask) {
+        if (subtask != null) {
+            if (epics.containsKey(subtask.getEpicId())) {
+                if (subtask.getEndTime() != null && subtask.getStartTime().isAfter(now)
+                        && subtask.getStartTime().isBefore(end) && subtask.getEndTime().isBefore(end)) {
+                    if (isCross(subtask)) {
+                        subtask.setId(idManager++);
+                        subtasks.put(subtask.getId(), subtask);
+                        setTask.add(subtask);
+                        int minute;
+                        if (subtask.getStartTime().getMinute() < 15) {
+                            minute = 0;
+                        } else if (subtask.getStartTime().getMinute() < 30) {
+                            minute = 15;
+                        } else if (subtask.getStartTime().getMinute() < 45) {
+                            minute = 30;
+                        } else {
+                            minute = 45;
+                        }
+                        LocalDateTime start = LocalDateTime.of(subtask.getStartTime().getYear(),
+                                subtask.getStartTime().getMonth(), subtask.getStartTime().getDayOfMonth(),
+                                subtask.getStartTime().getHour(), minute);
+                        if (subtask.getEndTime().getMinute() < 15) {
+                            minute = 0;
+                        } else if (subtask.getEndTime().getMinute() < 30) {
+                            minute = 15;
+                        } else if (subtask.getEndTime().getMinute() < 45) {
+                            minute = 30;
+                        } else {
+                            minute = 45;
+                        }
+                        LocalDateTime end = LocalDateTime.of(subtask.getEndTime().getYear(),
+                                subtask.getEndTime().getMonth(), subtask.getEndTime().getDayOfMonth(),
+                                subtask.getEndTime().getHour(), minute).plus(Duration.ofMinutes(15));
+                        do {
+                            mapTask.put(start, false);
+                            start = start.plus(Duration.ofMinutes(15));
+                        } while (!start.equals(end));
+                        Epic epic = epics.get(subtask.getEpicId());
+                        epic.addSubtaskIds(subtask.getId());
+                        syncEpic(epic);
+                        return true;
+                    }
+                } else {
+                    subtask.setId(idManager++);
+                    subtasks.put(subtask.getId(), subtask);
                     Epic epic = epics.get(subtask.getEpicId());
                     epic.addSubtaskIds(subtask.getId());
                     syncEpic(epic);
+                    return true;
                 }
-            } else {
-                subtask.setId(idManager++);
-                subtasks.put(subtask.getId(), subtask);
-                Epic epic = epics.get(subtask.getEpicId());
-                epic.addSubtaskIds(subtask.getId());
-                syncEpic(epic);
             }
         }
+        return false;
     }
 
     @Override
@@ -218,102 +278,307 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public void updateTask(Task task) {
-        if (tasks.containsKey(task.getId())) {
-            setTask.remove(tasks.get(task.getId()));
-            LocalDateTime start = tasks.get(task.getId()).getStartTime();
-            LocalDateTime end = tasks.get(task.getId()).getEndTime();
-            do {
-                mapTask.put(start, true);
-                start = start.plus(Duration.ofMinutes(15));
-            } while (!start.equals(end));
-            if (task.getEndTime() != null && task.getStartTime().getMinute() % 15 == 0
-                    && task.getEndTime().getMinute() % 15 == 0) {
-                if (isCross(task)) {
-                    tasks.put(task.getId(), task);
-                    setTask.add(task);
-                    start = task.getStartTime();
-                    end = task.getEndTime();
+    public boolean updateTask(Task task) {
+        if (task != null) {
+            if (tasks.containsKey(task.getId())) {
+                setTask.remove(tasks.get(task.getId()));
+                int minute;
+                if (tasks.get(task.getId()).getStartTime().getMinute() < 15) {
+                    minute = 0;
+                } else if (tasks.get(task.getId()).getStartTime().getMinute() < 30) {
+                    minute = 15;
+                } else if (tasks.get(task.getId()).getStartTime().getMinute() < 45) {
+                    minute = 30;
                 } else {
-                    setTask.add(tasks.get(task.getId()));
-                    start = tasks.get(task.getId()).getStartTime();
-                    end = tasks.get(task.getId()).getEndTime();
+                    minute = 45;
                 }
+                LocalDateTime start = LocalDateTime.of(tasks.get(task.getId()).getStartTime().getYear(),
+                        tasks.get(task.getId()).getStartTime().getMonth(),
+                        tasks.get(task.getId()).getStartTime().getDayOfMonth(),
+                        tasks.get(task.getId()).getStartTime().getHour(), minute);
+                if (tasks.get(task.getId()).getEndTime().getMinute() < 15) {
+                    minute = 0;
+                } else if (tasks.get(task.getId()).getEndTime().getMinute() < 30) {
+                    minute = 15;
+                } else if (tasks.get(task.getId()).getEndTime().getMinute() < 45) {
+                    minute = 30;
+                } else {
+                    minute = 45;
+                }
+                LocalDateTime end = LocalDateTime.of(tasks.get(task.getId()).getEndTime().getYear(),
+                        tasks.get(task.getId()).getEndTime().getMonth(),
+                        tasks.get(task.getId()).getEndTime().getDayOfMonth(),
+                        tasks.get(task.getId()).getEndTime().getHour(), minute).plus(Duration.ofMinutes(15));
                 do {
-                    mapTask.put(start, false);
+                    mapTask.put(start, true);
                     start = start.plus(Duration.ofMinutes(15));
                 } while (!start.equals(end));
-            } else {
-                tasks.put(task.getId(), task);
-            }
-        }
-    }
-
-    @Override
-    public void updateTask(Subtask subtask) {
-        Epic epic = epics.get(subtask.getEpicId());
-        if ((subtasks.containsKey(subtask.getId())) && (epic != null)
-                && (epic.getSubtaskIds().contains(subtask.getId()))) {
-            setTask.remove(subtasks.get(subtask.getId()));
-            LocalDateTime start = subtasks.get(subtask.getId()).getStartTime();
-            LocalDateTime end = subtasks.get(subtask.getId()).getEndTime();
-            do {
-                mapTask.put(start, true);
-                start = start.plus(Duration.ofMinutes(15));
-            } while (!start.equals(end));
-            if (subtask.getEndTime() != null && subtask.getStartTime().getMinute() % 15 == 0
-                    && subtask.getEndTime().getMinute() % 15 == 0) {
-                if (epic.getStartTime().equals(subtask.getStartTime())) {
-                    setTask.remove(epic);
-                    start = epic.getStartTime();
-                    end = epic.getEndTime();
-                    do {
-                        mapTask.put(start, true);
-                        start = start.plus(Duration.ofMinutes(15));
-                    } while (!start.equals(end));
-                }
-                if (isCross(subtask)) {
-                    subtasks.put(subtask.getId(), subtask);
-                    setTask.add(subtask);
-                    start = subtask.getStartTime();
-                    end = subtask.getEndTime();
-                    do {
-                        mapTask.put(start, false);
-                        start = start.plus(Duration.ofMinutes(15));
-                    } while (!start.equals(end));
-                    syncEpic(epic);
+                if (task.getEndTime() != null && task.getStartTime().isAfter(now)
+                        && task.getStartTime().isBefore(end) && task.getEndTime().isBefore(end)) {
+                    if (isCross(task)) {
+                        tasks.put(task.getId(), task);
+                        setTask.add(task);
+                        if (task.getStartTime().getMinute() < 15) {
+                            minute = 0;
+                        } else if (task.getStartTime().getMinute() < 30) {
+                            minute = 15;
+                        } else if (task.getStartTime().getMinute() < 45) {
+                            minute = 30;
+                        } else {
+                            minute = 45;
+                        }
+                        start = LocalDateTime.of(task.getStartTime().getYear(),
+                                task.getStartTime().getMonth(), task.getStartTime().getDayOfMonth(),
+                                task.getStartTime().getHour(), minute);
+                        if (task.getEndTime().getMinute() < 15) {
+                            minute = 0;
+                        } else if (task.getEndTime().getMinute() < 30) {
+                            minute = 15;
+                        } else if (task.getEndTime().getMinute() < 45) {
+                            minute = 30;
+                        } else {
+                            minute = 45;
+                        }
+                        end = LocalDateTime.of(task.getEndTime().getYear(),
+                                task.getEndTime().getMonth(), task.getEndTime().getDayOfMonth(),
+                                task.getEndTime().getHour(), minute).plus(Duration.ofMinutes(15));
+                        do {
+                            mapTask.put(start, false);
+                            start = start.plus(Duration.ofMinutes(15));
+                        } while (!start.equals(end));
+                        return true;
+                    } else {
+                        setTask.add(tasks.get(task.getId()));
+                        if (tasks.get(task.getId()).getStartTime().getMinute() < 15) {
+                            minute = 0;
+                        } else if (tasks.get(task.getId()).getStartTime().getMinute() < 30) {
+                            minute = 15;
+                        } else if (tasks.get(task.getId()).getStartTime().getMinute() < 45) {
+                            minute = 30;
+                        } else {
+                            minute = 45;
+                        }
+                        start = LocalDateTime.of(tasks.get(task.getId()).getStartTime().getYear(),
+                                tasks.get(task.getId()).getStartTime().getMonth(),
+                                tasks.get(task.getId()).getStartTime().getDayOfMonth(),
+                                tasks.get(task.getId()).getStartTime().getHour(), minute);
+                        if (tasks.get(task.getId()).getEndTime().getMinute() < 15) {
+                            minute = 0;
+                        } else if (tasks.get(task.getId()).getEndTime().getMinute() < 30) {
+                            minute = 15;
+                        } else if (tasks.get(task.getId()).getEndTime().getMinute() < 45) {
+                            minute = 30;
+                        } else {
+                            minute = 45;
+                        }
+                        end = LocalDateTime.of(tasks.get(task.getId()).getEndTime().getYear(),
+                                tasks.get(task.getId()).getEndTime().getMonth(),
+                                tasks.get(task.getId()).getEndTime().getDayOfMonth(),
+                                tasks.get(task.getId()).getEndTime().getHour(), minute).plus(Duration.ofMinutes(15));
+                        do {
+                            mapTask.put(start, false);
+                            start = start.plus(Duration.ofMinutes(15));
+                        } while (!start.equals(end));
+                    }
                 } else {
-                    setTask.add(subtasks.get(subtask.getId()));
-                    start = subtasks.get(subtask.getId()).getStartTime();
-                    end = subtasks.get(subtask.getId()).getEndTime();
-                    do {
-                        mapTask.put(start, false);
-                        start = start.plus(Duration.ofMinutes(15));
-                    } while (!start.equals(end));
+                    tasks.put(task.getId(), task);
+                    return true;
                 }
-            } else {
-                subtasks.put(subtask.getId(), subtask);
-                syncEpic(epic);
             }
         }
+        return false;
     }
 
     @Override
-    public void updateTask(Epic epic) {
-        if (epics.containsKey(epic.getId())) {
-            Epic epicIn = epics.get(epic.getId());
-            epicIn.setName(epic.getName());
-            epicIn.setDescription(epic.getDescription());
+    public boolean updateTask(Subtask subtask) {
+        if (subtask != null) {
+            Epic epic = epics.get(subtask.getEpicId());
+            if ((subtasks.containsKey(subtask.getId())) && (epic != null)
+                    && (epic.getSubtaskIds().contains(subtask.getId()))) {
+                setTask.remove(subtasks.get(subtask.getId()));
+                int minute;
+                if (subtasks.get(subtask.getId()).getStartTime().getMinute() < 15) {
+                    minute = 0;
+                } else if (subtasks.get(subtask.getId()).getStartTime().getMinute() < 30) {
+                    minute = 15;
+                } else if (subtasks.get(subtask.getId()).getStartTime().getMinute() < 45) {
+                    minute = 30;
+                } else {
+                    minute = 45;
+                }
+                LocalDateTime start = LocalDateTime.of(subtasks.get(subtask.getId()).getStartTime().getYear(),
+                        subtasks.get(subtask.getId()).getStartTime().getMonth(),
+                        subtasks.get(subtask.getId()).getStartTime().getDayOfMonth(),
+                        subtasks.get(subtask.getId()).getStartTime().getHour(), minute);
+                if (subtasks.get(subtask.getId()).getEndTime().getMinute() < 15) {
+                    minute = 0;
+                } else if (subtasks.get(subtask.getId()).getEndTime().getMinute() < 30) {
+                    minute = 15;
+                } else if (subtasks.get(subtask.getId()).getEndTime().getMinute() < 45) {
+                    minute = 30;
+                } else {
+                    minute = 45;
+                }
+                LocalDateTime end = LocalDateTime.of(subtasks.get(subtask.getId()).getEndTime().getYear(),
+                        subtasks.get(subtask.getId()).getEndTime().getMonth(),
+                        subtasks.get(subtask.getId()).getEndTime().getDayOfMonth(),
+                        subtasks.get(subtask.getId()).getEndTime().getHour(), minute).plus(Duration.ofMinutes(15));
+                do {
+                    mapTask.put(start, true);
+                    start = start.plus(Duration.ofMinutes(15));
+                } while (!start.equals(end));
+                if (subtask.getEndTime() != null && subtask.getStartTime().isAfter(now)
+                        && subtask.getStartTime().isBefore(end) && subtask.getEndTime().isBefore(end)) {
+                    if (epic.getStartTime().equals(subtask.getStartTime())) {
+                        setTask.remove(epic);
+                        if (epic.getStartTime().getMinute() < 15) {
+                            minute = 0;
+                        } else if (epic.getStartTime().getMinute() < 30) {
+                            minute = 15;
+                        } else if (epic.getStartTime().getMinute() < 45) {
+                            minute = 30;
+                        } else {
+                            minute = 45;
+                        }
+                        start = LocalDateTime.of(epic.getStartTime().getYear(),
+                                epic.getStartTime().getMonth(), epic.getStartTime().getDayOfMonth(),
+                                epic.getStartTime().getHour(), minute);
+                        if (epic.getEndTime().getMinute() < 15) {
+                            minute = 0;
+                        } else if (epic.getEndTime().getMinute() < 30) {
+                            minute = 15;
+                        } else if (epic.getEndTime().getMinute() < 45) {
+                            minute = 30;
+                        } else {
+                            minute = 45;
+                        }
+                        end = LocalDateTime.of(epic.getEndTime().getYear(),
+                                epic.getEndTime().getMonth(), epic.getEndTime().getDayOfMonth(),
+                                epic.getEndTime().getHour(), minute).plus(Duration.ofMinutes(15));
+                        do {
+                            mapTask.put(start, true);
+                            start = start.plus(Duration.ofMinutes(15));
+                        } while (!start.equals(end));
+                    }
+                    if (isCross(subtask)) {
+                        subtasks.put(subtask.getId(), subtask);
+                        setTask.add(subtask);
+                        if (subtask.getStartTime().getMinute() < 15) {
+                            minute = 0;
+                        } else if (subtask.getStartTime().getMinute() < 30) {
+                            minute = 15;
+                        } else if (subtask.getStartTime().getMinute() < 45) {
+                            minute = 30;
+                        } else {
+                            minute = 45;
+                        }
+                        start = LocalDateTime.of(subtask.getStartTime().getYear(),
+                                subtask.getStartTime().getMonth(), subtask.getStartTime().getDayOfMonth(),
+                                subtask.getStartTime().getHour(), minute);
+                        if (subtask.getEndTime().getMinute() < 15) {
+                            minute = 0;
+                        } else if (subtask.getEndTime().getMinute() < 30) {
+                            minute = 15;
+                        } else if (subtask.getEndTime().getMinute() < 45) {
+                            minute = 30;
+                        } else {
+                            minute = 45;
+                        }
+                        end = LocalDateTime.of(subtask.getEndTime().getYear(),
+                                subtask.getEndTime().getMonth(), subtask.getEndTime().getDayOfMonth(),
+                                subtask.getEndTime().getHour(), minute).plus(Duration.ofMinutes(15));
+                        do {
+                            mapTask.put(start, false);
+                            start = start.plus(Duration.ofMinutes(15));
+                        } while (!start.equals(end));
+                        syncEpic(epic);
+                        return true;
+                    } else {
+                        setTask.add(subtasks.get(subtask.getId()));
+                        if (subtasks.get(subtask.getId()).getStartTime().getMinute() < 15) {
+                            minute = 0;
+                        } else if (subtasks.get(subtask.getId()).getStartTime().getMinute() < 30) {
+                            minute = 15;
+                        } else if (subtasks.get(subtask.getId()).getStartTime().getMinute() < 45) {
+                            minute = 30;
+                        } else {
+                            minute = 45;
+                        }
+                        start = LocalDateTime.of(subtasks.get(subtask.getId()).getStartTime().getYear(),
+                                subtasks.get(subtask.getId()).getStartTime().getMonth(),
+                                subtasks.get(subtask.getId()).getStartTime().getDayOfMonth(),
+                                subtasks.get(subtask.getId()).getStartTime().getHour(), minute);
+                        if (subtasks.get(subtask.getId()).getEndTime().getMinute() < 15) {
+                            minute = 0;
+                        } else if (subtasks.get(subtask.getId()).getEndTime().getMinute() < 30) {
+                            minute = 15;
+                        } else if (subtasks.get(subtask.getId()).getEndTime().getMinute() < 45) {
+                            minute = 30;
+                        } else {
+                            minute = 45;
+                        }
+                        end = LocalDateTime.of(subtasks.get(subtask.getId()).getEndTime().getYear(),
+                                subtasks.get(subtask.getId()).getEndTime().getMonth(),
+                                subtasks.get(subtask.getId()).getEndTime().getDayOfMonth(),
+                                subtasks.get(subtask.getId()).getEndTime().getHour(), minute).plus(Duration.ofMinutes(15));
+                        do {
+                            mapTask.put(start, false);
+                            start = start.plus(Duration.ofMinutes(15));
+                        } while (!start.equals(end));
+                    }
+                } else {
+                    subtasks.put(subtask.getId(), subtask);
+                    syncEpic(epic);
+                    return true;
+                }
+            }
         }
+        return false;
+    }
+
+    @Override
+    public boolean updateTask(Epic epic) {
+        if (epic != null) {
+            if (epics.containsKey(epic.getId())) {
+                Epic epicIn = epics.get(epic.getId());
+                epicIn.setName(epic.getName());
+                epicIn.setDescription(epic.getDescription());
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
     public void removeTask(int id) {
-        if (tasks.get(id).getEndTime() != null && tasks.get(id).getStartTime().getMinute() % 15 == 0
-                && tasks.get(id).getEndTime().getMinute() % 15 == 0) {
+        if (tasks.get(id).getEndTime() != null && tasks.get(id).getStartTime().isAfter(now)
+                && tasks.get(id).getStartTime().isBefore(end) && tasks.get(id).getEndTime().isBefore(end)) {
             setTask.remove(tasks.get(id));
-            LocalDateTime start = tasks.get(id).getStartTime();
-            LocalDateTime end = tasks.get(id).getEndTime();
+            int minute;
+            if (tasks.get(id).getStartTime().getMinute() < 15) {
+                minute = 0;
+            } else if (tasks.get(id).getStartTime().getMinute() < 30) {
+                minute = 15;
+            } else if (tasks.get(id).getStartTime().getMinute() < 45) {
+                minute = 30;
+            } else {
+                minute = 45;
+            }
+            LocalDateTime start = LocalDateTime.of(tasks.get(id).getStartTime().getYear(),
+                    tasks.get(id).getStartTime().getMonth(), tasks.get(id).getStartTime().getDayOfMonth(),
+                    tasks.get(id).getStartTime().getHour(), minute);
+            if (tasks.get(id).getEndTime().getMinute() < 15) {
+                minute = 0;
+            } else if (tasks.get(id).getEndTime().getMinute() < 30) {
+                minute = 15;
+            } else if (tasks.get(id).getEndTime().getMinute() < 45) {
+                minute = 30;
+            } else {
+                minute = 45;
+            }
+            LocalDateTime end = LocalDateTime.of(tasks.get(id).getEndTime().getYear(),
+                    tasks.get(id).getEndTime().getMonth(), tasks.get(id).getEndTime().getDayOfMonth(),
+                    tasks.get(id).getEndTime().getHour(), minute).plus(Duration.ofMinutes(15));
             do {
                 mapTask.put(start, true);
                 start = start.plus(Duration.ofMinutes(15));
@@ -329,11 +594,34 @@ public class InMemoryTaskManager implements TaskManager {
         if (subtask != null) {
             Epic epic = epics.get(subtask.getEpicId());
             epic.removeSubtaskIds(id);
-            if (subtask.getEndTime() != null && subtask.getStartTime().getMinute() % 15 == 0
-                    && subtask.getEndTime().getMinute() % 15 == 0) {
+            if (subtask.getEndTime() != null && subtask.getStartTime().isAfter(now)
+                    && subtask.getStartTime().isBefore(end) && subtask.getEndTime().isBefore(end)) {
                 setTask.remove(subtask);
-                LocalDateTime start = subtask.getStartTime();
-                LocalDateTime end = subtask.getEndTime();
+                int minute;
+                if (subtask.getStartTime().getMinute() < 15) {
+                    minute = 0;
+                } else if (subtask.getStartTime().getMinute() < 30) {
+                    minute = 15;
+                } else if (subtask.getStartTime().getMinute() < 45) {
+                    minute = 30;
+                } else {
+                    minute = 45;
+                }
+                LocalDateTime start = LocalDateTime.of(subtask.getStartTime().getYear(),
+                        subtask.getStartTime().getMonth(), subtask.getStartTime().getDayOfMonth(),
+                        subtask.getStartTime().getHour(), minute);
+                if (subtask.getEndTime().getMinute() < 15) {
+                    minute = 0;
+                } else if (subtask.getEndTime().getMinute() < 30) {
+                    minute = 15;
+                } else if (subtask.getEndTime().getMinute() < 45) {
+                    minute = 30;
+                } else {
+                    minute = 45;
+                }
+                LocalDateTime end = LocalDateTime.of(subtask.getEndTime().getYear(),
+                        subtask.getEndTime().getMonth(), subtask.getEndTime().getDayOfMonth(),
+                        subtask.getEndTime().getHour(), minute).plus(Duration.ofMinutes(15));
                 do {
                     mapTask.put(start, true);
                     start = start.plus(Duration.ofMinutes(15));
@@ -353,8 +641,31 @@ public class InMemoryTaskManager implements TaskManager {
                     .map(subtasks::get)
                     .peek(setTask::remove)
                     .peek(subtask -> {
-                        LocalDateTime start = subtask.getStartTime();
-                        LocalDateTime end = subtask.getEndTime();
+                        int minute;
+                        if (subtask.getStartTime().getMinute() < 15) {
+                            minute = 0;
+                        } else if (subtask.getStartTime().getMinute() < 30) {
+                            minute = 15;
+                        } else if (subtask.getStartTime().getMinute() < 45) {
+                            minute = 30;
+                        } else {
+                            minute = 45;
+                        }
+                        LocalDateTime start = LocalDateTime.of(subtask.getStartTime().getYear(),
+                                subtask.getStartTime().getMonth(), subtask.getStartTime().getDayOfMonth(),
+                                subtask.getStartTime().getHour(), minute);
+                        if (subtask.getEndTime().getMinute() < 15) {
+                            minute = 0;
+                        } else if (subtask.getEndTime().getMinute() < 30) {
+                            minute = 15;
+                        } else if (subtask.getEndTime().getMinute() < 45) {
+                            minute = 30;
+                        } else {
+                            minute = 45;
+                        }
+                        LocalDateTime end = LocalDateTime.of(subtask.getEndTime().getYear(),
+                                subtask.getEndTime().getMonth(), subtask.getEndTime().getDayOfMonth(),
+                                subtask.getEndTime().getHour(), minute).plus(Duration.ofMinutes(15));
                         do {
                             mapTask.put(start, false);
                             start = start.plus(Duration.ofMinutes(15));
@@ -363,11 +674,34 @@ public class InMemoryTaskManager implements TaskManager {
                     .map(Subtask::getId)
                     .peek(inMemoryHistoryManager::remove)
                     .forEach(subtasks::remove);
-            if (epic.getEndTime() != null && epic.getStartTime().getMinute() % 15 == 0
-                    && epic.getEndTime().getMinute() % 15 == 0) {
+            if (epic.getEndTime() != null && epic.getStartTime().isAfter(now)
+                    && epic.getStartTime().isBefore(end) && epic.getEndTime().isBefore(end)) {
                 setTask.remove(epic);
-                LocalDateTime start = epic.getStartTime();
-                LocalDateTime end = epic.getEndTime();
+                int minute;
+                if (epic.getStartTime().getMinute() < 15) {
+                    minute = 0;
+                } else if (epic.getStartTime().getMinute() < 30) {
+                    minute = 15;
+                } else if (epic.getStartTime().getMinute() < 45) {
+                    minute = 30;
+                } else {
+                    minute = 45;
+                }
+                LocalDateTime start = LocalDateTime.of(epic.getStartTime().getYear(),
+                        epic.getStartTime().getMonth(), epic.getStartTime().getDayOfMonth(),
+                        epic.getStartTime().getHour(), minute);
+                if (epic.getEndTime().getMinute() < 15) {
+                    minute = 0;
+                } else if (epic.getEndTime().getMinute() < 30) {
+                    minute = 15;
+                } else if (epic.getEndTime().getMinute() < 45) {
+                    minute = 30;
+                } else {
+                    minute = 45;
+                }
+                LocalDateTime end = LocalDateTime.of(epic.getEndTime().getYear(),
+                        epic.getEndTime().getMonth(), epic.getEndTime().getDayOfMonth(),
+                        epic.getEndTime().getHour(), minute).plus(Duration.ofMinutes(15));
                 do {
                     mapTask.put(start, true);
                     start = start.plus(Duration.ofMinutes(15));
@@ -401,8 +735,31 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     protected boolean isCross(Task task) {
-        LocalDateTime startTime = task.getStartTime();
-        LocalDateTime endTime = task.getEndTime();
+        int minute;
+        if (task.getStartTime().getMinute() < 15) {
+            minute = 0;
+        } else if (task.getStartTime().getMinute() < 30) {
+            minute = 15;
+        } else if (task.getStartTime().getMinute() < 45) {
+            minute = 30;
+        } else {
+            minute = 45;
+        }
+        LocalDateTime startTime = LocalDateTime.of(task.getStartTime().getYear(),
+                task.getStartTime().getMonth(), task.getStartTime().getDayOfMonth(),
+                task.getStartTime().getHour(), minute);
+        if (task.getEndTime().getMinute() < 15) {
+            minute = 0;
+        } else if (task.getEndTime().getMinute() < 30) {
+            minute = 15;
+        } else if (task.getEndTime().getMinute() < 45) {
+            minute = 30;
+        } else {
+            minute = 45;
+        }
+        LocalDateTime endTime = LocalDateTime.of(task.getEndTime().getYear(),
+                task.getEndTime().getMonth(), task.getEndTime().getDayOfMonth(),
+                task.getEndTime().getHour(), minute).plus(Duration.ofMinutes(15));
         do {
             if (!mapTask.get(startTime)) {
                 return false;
@@ -452,8 +809,31 @@ public class InMemoryTaskManager implements TaskManager {
         }
         if (epic.getEndTime() != null && endTime == null) {
             setTask.remove(epic);
-            LocalDateTime start = epic.getStartTime();
-            LocalDateTime end = epic.getEndTime();
+            int minute;
+            if (epic.getStartTime().getMinute() < 15) {
+                minute = 0;
+            } else if (epic.getStartTime().getMinute() < 30) {
+                minute = 15;
+            } else if (epic.getStartTime().getMinute() < 45) {
+                minute = 30;
+            } else {
+                minute = 45;
+            }
+            LocalDateTime start = LocalDateTime.of(epic.getStartTime().getYear(),
+                    epic.getStartTime().getMonth(), epic.getStartTime().getDayOfMonth(),
+                    epic.getStartTime().getHour(), minute);
+            if (epic.getEndTime().getMinute() < 15) {
+                minute = 0;
+            } else if (epic.getEndTime().getMinute() < 30) {
+                minute = 15;
+            } else if (epic.getEndTime().getMinute() < 45) {
+                minute = 30;
+            } else {
+                minute = 45;
+            }
+            LocalDateTime end = LocalDateTime.of(epic.getEndTime().getYear(),
+                    epic.getEndTime().getMonth(), epic.getEndTime().getDayOfMonth(),
+                    epic.getEndTime().getHour(), minute).plus(Duration.ofMinutes(15));
             do {
                 mapTask.put(start, true);
                 start = start.plus(Duration.ofMinutes(15));
@@ -463,8 +843,31 @@ public class InMemoryTaskManager implements TaskManager {
             epic.setDuration(duration);
             epic.setEndTime(endTime);
             setTask.add(epic);
-            LocalDateTime start = epic.getStartTime();
-            LocalDateTime end = epic.getEndTime();
+            int minute;
+            if (epic.getStartTime().getMinute() < 15) {
+                minute = 0;
+            } else if (epic.getStartTime().getMinute() < 30) {
+                minute = 15;
+            } else if (epic.getStartTime().getMinute() < 45) {
+                minute = 30;
+            } else {
+                minute = 45;
+            }
+            LocalDateTime start = LocalDateTime.of(epic.getStartTime().getYear(),
+                    epic.getStartTime().getMonth(), epic.getStartTime().getDayOfMonth(),
+                    epic.getStartTime().getHour(), minute);
+            if (epic.getEndTime().getMinute() < 15) {
+                minute = 0;
+            } else if (epic.getEndTime().getMinute() < 30) {
+                minute = 15;
+            } else if (epic.getEndTime().getMinute() < 45) {
+                minute = 30;
+            } else {
+                minute = 45;
+            }
+            LocalDateTime end = LocalDateTime.of(epic.getEndTime().getYear(),
+                    epic.getEndTime().getMonth(), epic.getEndTime().getDayOfMonth(),
+                    epic.getEndTime().getHour(), minute).plus(Duration.ofMinutes(15));
             do {
                 mapTask.put(start, false);
                 start = start.plus(Duration.ofMinutes(15));

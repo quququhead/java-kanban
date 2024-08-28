@@ -24,15 +24,21 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     }
 
     @Override
-    public void addTask(Task task) {
-        super.addTask(task);
-        save();
+    public boolean addTask(Task task) {
+        if (super.addTask(task)) {
+            save();
+            return true;
+        }
+        return false;
     }
 
     @Override
-    public void addTask(Subtask subtask) {
-        super.addTask(subtask);
-        save();
+    public boolean addTask(Subtask subtask) {
+        if (super.addTask(subtask)) {
+            save();
+            return true;
+        }
+        return false;
     }
 
     @Override
@@ -60,21 +66,30 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     }
 
     @Override
-    public void updateTask(Task task) {
-        super.updateTask(task);
-        save();
+    public boolean updateTask(Task task) {
+        if (super.updateTask(task)) {
+            save();
+            return true;
+        }
+        return false;
     }
 
     @Override
-    public void updateTask(Subtask subtask) {
-        super.updateTask(subtask);
-        save();
+    public boolean updateTask(Subtask subtask) {
+        if (super.updateTask(subtask)) {
+            save();
+            return true;
+        }
+        return false;
     }
 
     @Override
-    public void updateTask(Epic epic) {
-        super.updateTask(epic);
-        save();
+    public boolean updateTask(Epic epic) {
+        if (super.updateTask(epic)) {
+            save();
+            return true;
+        }
+        return false;
     }
 
     @Override
@@ -163,13 +178,37 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                             newId = task.getId();
                         }
                     } else if (Tasks.SUBTASK.name().equals(substring)) {
-                        if (task.getEndTime() != null && task.getStartTime().getMinute() % 15 == 0
-                                && task.getEndTime().getMinute() % 15 == 0) {
+                        if (task.getEndTime() != null && task.getStartTime().isAfter(fileBackedTaskManager.now)
+                                && task.getStartTime().isBefore(fileBackedTaskManager.end)
+                                && task.getEndTime().isBefore(fileBackedTaskManager.end)) {
                             if (fileBackedTaskManager.isCross(task)) {
                                 fileBackedTaskManager.subtasks.put(task.getId(), (Subtask) task);
                                 fileBackedTaskManager.setTask.add(task);
-                                LocalDateTime start = task.getStartTime();
-                                LocalDateTime end = task.getEndTime();
+                                int minute;
+                                if (task.getStartTime().getMinute() < 15) {
+                                    minute = 0;
+                                } else if (task.getStartTime().getMinute() < 30) {
+                                    minute = 15;
+                                } else if (task.getStartTime().getMinute() < 45) {
+                                    minute = 30;
+                                } else {
+                                    minute = 45;
+                                }
+                                LocalDateTime start = LocalDateTime.of(task.getStartTime().getYear(),
+                                        task.getStartTime().getMonth(), task.getStartTime().getDayOfMonth(),
+                                        task.getStartTime().getHour(), minute);
+                                if (task.getEndTime().getMinute() < 15) {
+                                    minute = 0;
+                                } else if (task.getEndTime().getMinute() < 30) {
+                                    minute = 15;
+                                } else if (task.getEndTime().getMinute() < 45) {
+                                    minute = 30;
+                                } else {
+                                    minute = 45;
+                                }
+                                LocalDateTime end = LocalDateTime.of(task.getEndTime().getYear(),
+                                        task.getEndTime().getMonth(), task.getEndTime().getDayOfMonth(),
+                                        task.getEndTime().getHour(), minute).plus(Duration.ofMinutes(15));
                                 do {
                                     fileBackedTaskManager.mapTask.put(start, false);
                                     start = start.plus(Duration.ofMinutes(15));
@@ -185,13 +224,37 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                             }
                         }
                     } else {
-                        if (task.getEndTime() != null && task.getStartTime().getMinute() % 15 == 0
-                                && task.getEndTime().getMinute() % 15 == 0) {
+                        if (task.getEndTime() != null && task.getStartTime().isAfter(fileBackedTaskManager.now)
+                                && task.getStartTime().isBefore(fileBackedTaskManager.end)
+                                && task.getEndTime().isBefore(fileBackedTaskManager.end)) {
                             if (fileBackedTaskManager.isCross(task)) {
                                 fileBackedTaskManager.tasks.put(task.getId(), task);
                                 fileBackedTaskManager.setTask.add(task);
-                                LocalDateTime start = task.getStartTime();
-                                LocalDateTime end = task.getEndTime();
+                                int minute;
+                                if (task.getStartTime().getMinute() < 15) {
+                                    minute = 0;
+                                } else if (task.getStartTime().getMinute() < 30) {
+                                    minute = 15;
+                                } else if (task.getStartTime().getMinute() < 45) {
+                                    minute = 30;
+                                } else {
+                                    minute = 45;
+                                }
+                                LocalDateTime start = LocalDateTime.of(task.getStartTime().getYear(),
+                                        task.getStartTime().getMonth(), task.getStartTime().getDayOfMonth(),
+                                        task.getStartTime().getHour(), minute);
+                                if (task.getEndTime().getMinute() < 15) {
+                                    minute = 0;
+                                } else if (task.getEndTime().getMinute() < 30) {
+                                    minute = 15;
+                                } else if (task.getEndTime().getMinute() < 45) {
+                                    minute = 30;
+                                } else {
+                                    minute = 45;
+                                }
+                                LocalDateTime end = LocalDateTime.of(task.getEndTime().getYear(),
+                                        task.getEndTime().getMonth(), task.getEndTime().getDayOfMonth(),
+                                        task.getEndTime().getHour(), minute).plus(Duration.ofMinutes(15));
                                 do {
                                     fileBackedTaskManager.mapTask.put(start, false);
                                     start = start.plus(Duration.ofMinutes(15));
@@ -215,11 +278,35 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                     Epic epic = fileBackedTaskManager.epics.get(sub.getEpicId());
                     epic.addSubtaskIds(sub.getId());
                 } else {
-                    if (sub.getEndTime() != null && sub.getStartTime().getMinute() % 15 == 0
-                            && sub.getEndTime().getMinute() % 15 == 0) {
+                    if (sub.getEndTime() != null && sub.getStartTime().isAfter(fileBackedTaskManager.now)
+                            && sub.getStartTime().isBefore(fileBackedTaskManager.end)
+                            && sub.getEndTime().isBefore(fileBackedTaskManager.end)) {
                         fileBackedTaskManager.setTask.remove(sub);
-                        LocalDateTime start = sub.getStartTime();
-                        LocalDateTime end = sub.getEndTime();
+                        int minute;
+                        if (sub.getStartTime().getMinute() < 15) {
+                            minute = 0;
+                        } else if (sub.getStartTime().getMinute() < 30) {
+                            minute = 15;
+                        } else if (sub.getStartTime().getMinute() < 45) {
+                            minute = 30;
+                        } else {
+                            minute = 45;
+                        }
+                        LocalDateTime start = LocalDateTime.of(sub.getStartTime().getYear(),
+                                sub.getStartTime().getMonth(), sub.getStartTime().getDayOfMonth(),
+                                sub.getStartTime().getHour(), minute);
+                        if (sub.getEndTime().getMinute() < 15) {
+                            minute = 0;
+                        } else if (sub.getEndTime().getMinute() < 30) {
+                            minute = 15;
+                        } else if (sub.getEndTime().getMinute() < 45) {
+                            minute = 30;
+                        } else {
+                            minute = 45;
+                        }
+                        LocalDateTime end = LocalDateTime.of(sub.getEndTime().getYear(),
+                                sub.getEndTime().getMonth(), sub.getEndTime().getDayOfMonth(),
+                                sub.getEndTime().getHour(), minute).plus(Duration.ofMinutes(15));
                         do {
                             fileBackedTaskManager.mapTask.put(start, false);
                             start = start.plus(Duration.ofMinutes(15));

@@ -6,13 +6,14 @@ import model.Task;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Optional;
 import java.util.regex.Pattern;
 
 public class TasksHandler extends BaseHttpHandler implements HttpHandler {
 
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
-        try {
+        try (httpExchange) {
             String path = httpExchange.getRequestURI().getPath();
             switch (httpExchange.getRequestMethod()) {
                 case "GET":
@@ -25,11 +26,14 @@ public class TasksHandler extends BaseHttpHandler implements HttpHandler {
                         String pathId = path.replaceFirst("/tasks/", "");
                         int id = HttpTaskServer.parsePathId(pathId);
                         if (id != -1) {
-                            String response = HttpTaskServer.gson.toJson(HttpTaskServer.taskManager.getTask(id));
-                            sendText(httpExchange, response);
-                        } else {
-                            sendNotFound(httpExchange, "Нет задачи с id: " + pathId + "!");
+                            Optional<Task> task = HttpTaskServer.taskManager.getTask(id);
+                            if (task.isPresent()) {
+                                String response = HttpTaskServer.gson.toJson(task.get());
+                                sendText(httpExchange, response);
+                                return;
+                            }
                         }
+                        sendNotFound(httpExchange, "Нет задачи с id: " + pathId + "!");
                         return;
                     }
                     httpExchange.sendResponseHeaders(500, 0);
@@ -45,7 +49,7 @@ public class TasksHandler extends BaseHttpHandler implements HttpHandler {
                             }
                         } else {
                             if (HttpTaskServer.taskManager.addTask(task)) {
-                                httpExchange.sendResponseHeaders(201, 0);
+                                sendText(httpExchange, body);
                                 return;
                             }
                         }
@@ -56,10 +60,18 @@ public class TasksHandler extends BaseHttpHandler implements HttpHandler {
                     break;
                 case "DELETE":
                     if (Pattern.matches("^/tasks/\\d+$", path)) {
-                        int id = HttpTaskServer.parsePathId(path.replaceFirst("/tasks/", ""));
-                        HttpTaskServer.taskManager.removeTask(id);
-                        String response = HttpTaskServer.gson.toJson(HttpTaskServer.taskManager.getTask(id));
-                        sendText(httpExchange, response);
+                        String pathId = path.replaceFirst("/tasks/", "");
+                        int id = HttpTaskServer.parsePathId(pathId);
+                        if (id != -1) {
+                            Optional<Task> task = HttpTaskServer.taskManager.getTask(id);
+                            if (task.isPresent()) {
+                                String response = HttpTaskServer.gson.toJson(task.get());
+                                HttpTaskServer.taskManager.removeTask(id);
+                                sendText(httpExchange, response);
+                                return;
+                            }
+                        }
+                        sendNotFound(httpExchange, "Нет задачи с id: " + pathId + "!");
                         return;
                     }
                     httpExchange.sendResponseHeaders(500, 0);

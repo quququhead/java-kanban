@@ -23,7 +23,7 @@ public class InMemoryTaskManager implements TaskManager {
     protected final LocalDateTime end;
 
     public InMemoryTaskManager() {
-        idManager = 0;
+        idManager = 1;
         inMemoryHistoryManager = Managers.getDefaultHistory();
         tasks = new HashMap<>();
         subtasks = new HashMap<>();

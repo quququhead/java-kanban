@@ -26,66 +26,66 @@ class InMemoryHistoryManagerTest {
 
     @Test
     public void shouldInMemoryHistoryManagerAddTask() {
-        Task task0 = new Task("Задача0", "ИсходноеОписаниеЗадача0", Status.NEW,
+        Task task1 = new Task("Задача1", "ОписаниеЗадача1", Status.NEW,
                 Duration.ofMinutes(15), LocalDateTime.of(2024, 9, 18, 20, 0));
-        inMemoryHistoryManager.add(task0);
+        inMemoryHistoryManager.add(task1);
         Assertions.assertFalse(inMemoryHistoryManager.getHistory().isEmpty());
     }
 
     @Test
     public void shouldInMemoryHistoryManagerRemoveTask() {
-        Task task0 = new Task("Задача0", "ИсходноеОписаниеЗадача0", Status.NEW,
+        Task task1 = new Task("Задача1", "ОписаниеЗадача1", Status.NEW,
                 Duration.ofMinutes(15), LocalDateTime.of(2024, 9, 18, 20, 0));
-        inMemoryHistoryManager.add(task0);
-        inMemoryHistoryManager.remove(task0.getId());
+        inMemoryHistoryManager.add(task1);
+        inMemoryHistoryManager.remove(task1.getId());
         Assertions.assertTrue(inMemoryHistoryManager.getHistory().isEmpty());
     }
 
     @Test
     public void shouldInMemoryHistoryManagerBeEmpty() {
-        Task task0 = new Task("Задача0", "ИсходноеОписаниеЗадача0", Status.NEW,
+        Task task1 = new Task("Задача1", "ОписаниеЗадача1", Status.NEW,
                 Duration.ofMinutes(15), LocalDateTime.of(2024, 9, 18, 20, 0));
-        Task task1 = new Task("Задача1", "ИсходноеОписаниеЗадача1", Status.NEW,
+        Task task2 = new Task("Задача2", "ОписаниеЗадача2", Status.NEW,
                 Duration.ofMinutes(30), LocalDateTime.of(2024, 9, 18, 21, 0));
-        task1.setId(1);
-        inMemoryHistoryManager.add(task0);
+        task2.setId(1);
         inMemoryHistoryManager.add(task1);
-        inMemoryHistoryManager.remove(task0.getId());
+        inMemoryHistoryManager.add(task2);
         inMemoryHistoryManager.remove(task1.getId());
+        inMemoryHistoryManager.remove(task2.getId());
         Assertions.assertTrue(inMemoryHistoryManager.getHistory().isEmpty());
     }
 
     @Test
     public void shouldInMemoryHistoryManagerRemoveFromHead() {
-        Task task0 = new Task("Задача0", "ИсходноеОписаниеЗадача0", Status.NEW,
+        Task task1 = new Task("Задача1", "ОписаниеЗадача1", Status.NEW,
                 Duration.ofMinutes(15), LocalDateTime.of(2024, 9, 18, 20, 0));
-        Task task1 = new Task("Задача1", "ИсходноеОписаниеЗадача1", Status.NEW,
+        Task task2 = new Task("Задача2", "ОписаниеЗадача2", Status.NEW,
                 Duration.ofMinutes(30), LocalDateTime.of(2024, 9, 18, 21, 0));
-        task1.setId(1);
-        Task task2 = new Task("Задача2", "ИсходноеОписаниеЗадача2", Status.NEW,
+        task2.setId(1);
+        Task task3 = new Task("Задача3", "ОписаниеЗадача3", Status.NEW,
                 Duration.ofMinutes(45), LocalDateTime.of(2024, 9, 18, 22, 0));
-        task2.setId(2);
-        inMemoryHistoryManager.add(task0);
+        task3.setId(2);
         inMemoryHistoryManager.add(task1);
         inMemoryHistoryManager.add(task2);
-        inMemoryHistoryManager.remove(task0.getId());
+        inMemoryHistoryManager.add(task3);
+        inMemoryHistoryManager.remove(task1.getId());
         Assertions.assertEquals(1, inMemoryHistoryManager.getHistory().getFirst().getId());
     }
 
     @Test
     public void shouldInMemoryHistoryManagerRemoveFromMiddle() {
-        Task task0 = new Task("Задача0", "ИсходноеОписаниеЗадача0", Status.NEW,
+        Task task1 = new Task("Задача1", "ОписаниеЗадача1", Status.NEW,
                 Duration.ofMinutes(15), LocalDateTime.of(2024, 9, 18, 20, 0));
-        Task task1 = new Task("Задача1", "ИсходноеОписаниеЗадача1", Status.NEW,
+        Task task2 = new Task("Задача2", "ОписаниеЗадача2", Status.NEW,
                 Duration.ofMinutes(30), LocalDateTime.of(2024, 9, 18, 21, 0));
-        task1.setId(1);
-        Task task2 = new Task("Задача2", "ИсходноеОписаниеЗадача2", Status.NEW,
+        task2.setId(1);
+        Task task3 = new Task("Задача3", "ОписаниеЗадача3", Status.NEW,
                 Duration.ofMinutes(45), LocalDateTime.of(2024, 9, 18, 22, 0));
-        task2.setId(2);
-        inMemoryHistoryManager.add(task0);
+        task3.setId(2);
         inMemoryHistoryManager.add(task1);
         inMemoryHistoryManager.add(task2);
-        inMemoryHistoryManager.remove(task1.getId());
+        inMemoryHistoryManager.add(task3);
+        inMemoryHistoryManager.remove(task2.getId());
         Assertions.assertEquals(2, inMemoryHistoryManager.getHistory().size());
         Assertions.assertEquals(0, inMemoryHistoryManager.getHistory().getFirst().getId());
         Assertions.assertEquals(2, inMemoryHistoryManager.getHistory().getLast().getId());
@@ -93,35 +93,35 @@ class InMemoryHistoryManagerTest {
 
     @Test
     public void shouldInMemoryHistoryManagerRemoveFromLast() {
-        Task task0 = new Task("Задача0", "ИсходноеОписаниеЗадача0", Status.NEW,
+        Task task1 = new Task("Задача1", "ОписаниеЗадача1", Status.NEW,
                 Duration.ofMinutes(15), LocalDateTime.of(2024, 9, 18, 20, 0));
-        Task task1 = new Task("Задача1", "ИсходноеОписаниеЗадача1", Status.NEW,
+        Task task2 = new Task("Задача2", "ОписаниеЗадача2", Status.NEW,
                 Duration.ofMinutes(30), LocalDateTime.of(2024, 9, 18, 21, 0));
-        task1.setId(1);
-        Task task2 = new Task("Задача2", "ИсходноеОписаниеЗадача2", Status.NEW,
+        task2.setId(1);
+        Task task3 = new Task("Задача3", "ОписаниеЗадача3", Status.NEW,
                 Duration.ofMinutes(45), LocalDateTime.of(2024, 9, 18, 22, 0));
-        task2.setId(2);
-        inMemoryHistoryManager.add(task0);
+        task3.setId(2);
         inMemoryHistoryManager.add(task1);
         inMemoryHistoryManager.add(task2);
-        inMemoryHistoryManager.remove(task2.getId());
+        inMemoryHistoryManager.add(task3);
+        inMemoryHistoryManager.remove(task3.getId());
         Assertions.assertEquals(1, inMemoryHistoryManager.getHistory().getLast().getId());
     }
 
     @Test
     public void shouldInMemoryHistoryManagerReplaceFromHeadToLast() {
-        Task task0 = new Task("Задача0", "ИсходноеОписаниеЗадача0", Status.NEW,
+        Task task1 = new Task("Задача1", "ОписаниеЗадача1", Status.NEW,
                 Duration.ofMinutes(15), LocalDateTime.of(2024, 9, 18, 20, 0));
-        Task task1 = new Task("Задача1", "ИсходноеОписаниеЗадача1", Status.NEW,
+        Task task2 = new Task("Задача2", "ОписаниеЗадача2", Status.NEW,
                 Duration.ofMinutes(30), LocalDateTime.of(2024, 9, 18, 21, 0));
-        task1.setId(1);
-        Task task2 = new Task("Задача2", "ИсходноеОписаниеЗадача2", Status.NEW,
+        task2.setId(1);
+        Task task3 = new Task("Задача3", "ОписаниеЗадача3", Status.NEW,
                 Duration.ofMinutes(45), LocalDateTime.of(2024, 9, 18, 22, 0));
-        task2.setId(2);
-        inMemoryHistoryManager.add(task0);
+        task3.setId(2);
         inMemoryHistoryManager.add(task1);
         inMemoryHistoryManager.add(task2);
-        inMemoryHistoryManager.add(task0);
+        inMemoryHistoryManager.add(task3);
+        inMemoryHistoryManager.add(task1);
         Assertions.assertEquals(3, inMemoryHistoryManager.getHistory().size());
         Assertions.assertEquals(1, inMemoryHistoryManager.getHistory().getFirst().getId());
         Assertions.assertEquals(0, inMemoryHistoryManager.getHistory().getLast().getId());

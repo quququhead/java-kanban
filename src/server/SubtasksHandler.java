@@ -6,13 +6,14 @@ import model.Subtask;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Optional;
 import java.util.regex.Pattern;
 
 public class SubtasksHandler extends BaseHttpHandler implements HttpHandler {
 
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
-        try {
+        try (httpExchange) {
             String path = httpExchange.getRequestURI().getPath();
             switch (httpExchange.getRequestMethod()) {
                 case "GET":
@@ -25,11 +26,14 @@ public class SubtasksHandler extends BaseHttpHandler implements HttpHandler {
                         String pathId = path.replaceFirst("/subtasks/", "");
                         int id = HttpTaskServer.parsePathId(pathId);
                         if (id != -1) {
-                            String response = HttpTaskServer.gson.toJson(HttpTaskServer.taskManager.getSubtask(id));
-                            sendText(httpExchange, response);
-                        } else {
-                            sendNotFound(httpExchange, "Нет подзадачи с id: " + pathId + "!");
+                            Optional<Subtask> subtask = HttpTaskServer.taskManager.getSubtask(id);
+                            if (subtask.isPresent()) {
+                                String response = HttpTaskServer.gson.toJson(subtask.get());
+                                sendText(httpExchange, response);
+                                return;
+                            }
                         }
+                        sendNotFound(httpExchange, "Нет задачи с id: " + pathId + "!");
                         return;
                     }
                     httpExchange.sendResponseHeaders(500, 0);
@@ -45,7 +49,7 @@ public class SubtasksHandler extends BaseHttpHandler implements HttpHandler {
                             }
                         } else {
                             if (HttpTaskServer.taskManager.addTask(subtask)) {
-                                httpExchange.sendResponseHeaders(201, 0);
+                                sendText(httpExchange, body);
                                 return;
                             }
                         }
@@ -56,10 +60,18 @@ public class SubtasksHandler extends BaseHttpHandler implements HttpHandler {
                     break;
                 case "DELETE":
                     if (Pattern.matches("^/subtasks/\\d+$", path)) {
-                        int id = HttpTaskServer.parsePathId(path.replaceFirst("/subtasks/", ""));
-                        HttpTaskServer.taskManager.removeSubtask(id);
-                        String response = HttpTaskServer.gson.toJson(HttpTaskServer.taskManager.getSubtask(id));
-                        sendText(httpExchange, response);
+                        String pathId = path.replaceFirst("/subtasks/", "");
+                        int id = HttpTaskServer.parsePathId(pathId);
+                        if (id != -1) {
+                            Optional<Subtask> subtask = HttpTaskServer.taskManager.getSubtask(id);
+                            if (subtask.isPresent()) {
+                                String response = HttpTaskServer.gson.toJson(subtask.get());
+                                HttpTaskServer.taskManager.removeSubtask(id);
+                                sendText(httpExchange, response);
+                                return;
+                            }
+                        }
+                        sendNotFound(httpExchange, "Нет задачи с id: " + pathId + "!");
                         return;
                     }
                     httpExchange.sendResponseHeaders(500, 0);

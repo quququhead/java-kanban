@@ -10,7 +10,7 @@ public class HistoryHandler extends BaseHttpHandler implements HttpHandler {
 
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
-        try {
+        try (httpExchange) {
             String path = httpExchange.getRequestURI().getPath();
             switch (httpExchange.getRequestMethod()) {
                 case "GET":

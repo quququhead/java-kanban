@@ -6,11 +6,11 @@ import com.sun.net.httpserver.HttpHandler;
 import java.io.IOException;
 import java.util.regex.Pattern;
 
-public class PrioritiziedHandler extends BaseHttpHandler implements HttpHandler {
+public class PrioritizedHandler extends BaseHttpHandler implements HttpHandler {
 
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
-        try {
+        try (httpExchange) {
             String path = httpExchange.getRequestURI().getPath();
             switch (httpExchange.getRequestMethod()) {
                 case "GET":

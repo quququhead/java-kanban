@@ -165,7 +165,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     public static FileBackedTaskManager loadFromFile(File file) throws ManagerSaveException {
         FileBackedTaskManager fileBackedTaskManager = new FileBackedTaskManager(file);
         try (BufferedReader bufferedReader = new BufferedReader(new FileReader(file, StandardCharsets.UTF_8))) {
-            int newId = -1;
+            int newId = 0;
             while (bufferedReader.ready()) {
                 String taskToString = bufferedReader.readLine();
                 Task task = fileBackedTaskManager.fromString(taskToString);

@@ -6,13 +6,14 @@ import model.Epic;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Optional;
 import java.util.regex.Pattern;
 
 public class EpicsHandler extends BaseHttpHandler implements HttpHandler {
 
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
-        try {
+        try (httpExchange) {
             String path = httpExchange.getRequestURI().getPath();
             switch (httpExchange.getRequestMethod()) {
                 case "GET":
@@ -25,9 +26,12 @@ public class EpicsHandler extends BaseHttpHandler implements HttpHandler {
                         String pathId = path.replaceFirst("/epics/", "");
                         int id = HttpTaskServer.parsePathId(pathId);
                         if (id != -1) {
-                            String response = HttpTaskServer.gson.toJson(HttpTaskServer.taskManager.getEpic(id));
-                            sendText(httpExchange, response);
-                            return;
+                            Optional<Epic> epic = HttpTaskServer.taskManager.getEpic(id);
+                            if (epic.isPresent()) {
+                                String response = HttpTaskServer.gson.toJson(epic.get());
+                                sendText(httpExchange, response);
+                                return;
+                            }
                         }
                         sendNotFound(httpExchange, "Нет эпика с id: " + pathId + "!");
                         return;
@@ -37,9 +41,10 @@ public class EpicsHandler extends BaseHttpHandler implements HttpHandler {
                                 .replaceFirst("/subtasks", "");
                         int id = HttpTaskServer.parsePathId(pathId);
                         if (id != -1) {
-                            if (HttpTaskServer.taskManager.getEpic(id).isPresent()) {
+                            Optional<Epic> epic = HttpTaskServer.taskManager.getEpic(id);
+                            if (epic.isPresent()) {
                                 String response = HttpTaskServer.gson
-                                        .toJson(HttpTaskServer.taskManager.getSubtask(id));
+                                        .toJson(HttpTaskServer.taskManager.getEpicSubtasks(id));
                                 sendText(httpExchange, response);
                                 return;
                             }
@@ -60,7 +65,7 @@ public class EpicsHandler extends BaseHttpHandler implements HttpHandler {
                             }
                         } else {
                             HttpTaskServer.taskManager.addTask(epic);
-                            httpExchange.sendResponseHeaders(201, 0);
+                            sendText(httpExchange, body);
                             return;
                         }
                     }
@@ -68,10 +73,18 @@ public class EpicsHandler extends BaseHttpHandler implements HttpHandler {
                     break;
                 case "DELETE":
                     if (Pattern.matches("^/epics/\\d+$", path)) {
-                        int id = HttpTaskServer.parsePathId(path.replaceFirst("/epics/", ""));
-                        HttpTaskServer.taskManager.removeEpic(id);
-                        String response = HttpTaskServer.gson.toJson(HttpTaskServer.taskManager.getEpic(id));
-                        sendText(httpExchange, response);
+                        String pathId = path.replaceFirst("/epics/", "");
+                        int id = HttpTaskServer.parsePathId(pathId);
+                        if (id != -1) {
+                            Optional<Epic> epic = HttpTaskServer.taskManager.getEpic(id);
+                            if (epic.isPresent()) {
+                                String response = HttpTaskServer.gson.toJson(epic.get());
+                                HttpTaskServer.taskManager.removeEpic(id);
+                                sendText(httpExchange, response);
+                                return;
+                            }
+                        }
+                        sendNotFound(httpExchange, "Нет задачи с id: " + pathId + "!");
                         return;
                     }
                     httpExchange.sendResponseHeaders(500, 0);

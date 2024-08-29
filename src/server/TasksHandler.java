@@ -49,7 +49,7 @@ public class TasksHandler extends BaseHttpHandler implements HttpHandler {
                             }
                         } else {
                             if (HttpTaskServer.taskManager.addTask(task)) {
-                                sendText(httpExchange, body);
+                                sendText(httpExchange, HttpTaskServer.gson.toJson(task));
                                 return;
                             }
                         }

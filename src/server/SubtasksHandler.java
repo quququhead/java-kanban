@@ -49,7 +49,7 @@ public class SubtasksHandler extends BaseHttpHandler implements HttpHandler {
                             }
                         } else {
                             if (HttpTaskServer.taskManager.addTask(subtask)) {
-                                sendText(httpExchange, body);
+                                sendText(httpExchange, HttpTaskServer.gson.toJson(subtask));
                                 return;
                             }
                         }

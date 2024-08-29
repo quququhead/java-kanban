@@ -65,7 +65,7 @@ public class EpicsHandler extends BaseHttpHandler implements HttpHandler {
                             }
                         } else {
                             HttpTaskServer.taskManager.addTask(epic);
-                            sendText(httpExchange, body);
+                            sendText(httpExchange, HttpTaskServer.gson.toJson(epic));
                             return;
                         }
                     }
